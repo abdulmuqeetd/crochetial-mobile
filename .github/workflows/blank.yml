@@ -15,23 +15,34 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y \
-            git zip unzip \
+            git zip unzip curl \
             openjdk-17-jdk \
             python3-pip python3-venv \
             autoconf libtool pkg-config \
-            zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev
 
       - name: Install Buildozer
         run: |
-          python3 -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip setuptools wheel
           python3 -m pip install buildozer cython==0.29.36
+
+      - name: Clean old build
+        run: |
+          rm -rf .buildozer bin
 
       - name: Build APK
         run: |
-          buildozer -v android debug
+          yes | buildozer -v android debug
+
+      - name: Show bin files
+        if: always()
+        run: |
+          ls -la
+          ls -la bin || true
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Crochetial-APK
