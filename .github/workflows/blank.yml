@@ -31,9 +31,24 @@ jobs:
         run: |
           rm -rf .buildozer bin
 
-      - name: Build APK
+      - name: First Buildozer setup attempt
+        continue-on-error: true
         run: |
-          yes | buildozer -v android debug
+          buildozer -v android debug
+
+      - name: Accept Android SDK licenses
+        run: |
+          SDKROOT="$HOME/.buildozer/android/platform/android-sdk"
+          echo "SDKROOT=$SDKROOT"
+          find "$SDKROOT" -name sdkmanager -type f || true
+          SDKMANAGER=$(find "$SDKROOT" -name sdkmanager -type f | head -n 1)
+          echo "SDKMANAGER=$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" || true
+
+      - name: Final Build APK
+        run: |
+          buildozer -v android debug
 
       - name: Show bin files
         if: always()
